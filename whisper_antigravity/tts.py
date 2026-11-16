@@ -13,8 +13,10 @@ import edge_tts
 from .config import load_config
 
 
-def find_audio_player() -> Optional[List[str]]:
-    """Detect available audio players on the system and return command arguments."""
+def find_audio_player(file_path: Optional[Path] = None) -> Optional[List[str]]:
+    """Detect available audio players on the system (Linux, macOS, Windows)."""
+    import sys
+
     config = load_config()
     configured_player = config.get("audio_player", "auto")
 
@@ -25,11 +27,38 @@ def find_audio_player() -> Optional[List[str]]:
                 return ["mpv", "--no-video", "--really-quiet"]
             elif configured_player == "ffplay":
                 return ["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet"]
+            elif configured_player == "afplay":
+                return ["afplay"]
             elif configured_player in ("paplay", "aplay"):
                 return [configured_player]
             return [configured_player]
 
-    # Auto-detection priority
+    # 1. macOS Native Audio Player
+    if sys.platform == "darwin":
+        if shutil.which("afplay"):
+            return ["afplay"]
+        elif shutil.which("mpv"):
+            return ["mpv", "--no-video", "--really-quiet"]
+
+    # 2. Windows Native & Ported Players
+    if sys.platform == "win32":
+        if shutil.which("mpv"):
+            return ["mpv", "--no-video", "--really-quiet"]
+        elif shutil.which("ffplay"):
+            return ["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet"]
+        # Fall back to PowerShell Media Player if available
+        if shutil.which("powershell"):
+            ps_script = (
+                "Add-Type -AssemblyName presentationCore; "
+                "$player = New-Object System.Windows.Media.MediaPlayer; "
+                "$player.Open([System.Uri]$args[0]); "
+                "$player.Play(); "
+                "Start-Sleep -Milliseconds 1000; "
+                "while ($player.NaturalDuration.HasTimeSpan -eq $false -or $player.Position -lt $player.NaturalDuration.TimeSpan) { Start-Sleep -Milliseconds 250 }"
+            )
+            return ["powershell", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", ps_script]
+
+    # 3. Linux & Generic Unix Players
     if shutil.which("mpv"):
         return ["mpv", "--no-video", "--really-quiet"]
     elif shutil.which("ffplay"):
@@ -103,7 +132,9 @@ def synthesize_speech(
 
 def play_audio_file(file_path: Path, background: bool = True) -> bool:
     """Play an audio file using system player. If background=True, does not block."""
-    player_cmd = find_audio_player()
+    import sys
+
+    player_cmd = find_audio_player(file_path)
     if not player_cmd:
         # Fall back to python edge-playback if available
         if shutil.which("edge-playback"):
@@ -115,14 +146,22 @@ def play_audio_file(file_path: Path, background: bool = True) -> bool:
 
     try:
         if background:
-            # Spawn in a new session detached from terminal so hook returns immediately
-            subprocess.Popen(
-                cmd,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                stdin=subprocess.DEVNULL,
-                start_new_session=True,
-            )
+            popen_kwargs = {
+                "stdout": subprocess.DEVNULL,
+                "stderr": subprocess.DEVNULL,
+                "stdin": subprocess.DEVNULL,
+            }
+            if sys.platform == "win32":
+                # Windows detached process flags
+                DETACHED_PROCESS = 0x00000008
+                CREATE_NEW_PROCESS_GROUP = 0x00000200
+                CREATE_NO_WINDOW = 0x08000000
+                popen_kwargs["creationflags"] = DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW
+            else:
+                # POSIX detached session
+                popen_kwargs["start_new_session"] = True
+
+            subprocess.Popen(cmd, **popen_kwargs)
         else:
             subprocess.run(
                 cmd,

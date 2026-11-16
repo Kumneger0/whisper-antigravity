@@ -16,39 +16,42 @@
 
 ---
 
-## 📦 Prerequisites
+## 💻 Platform Support & Audio Prerequisites
 
-On Linux, an audio player is recommended for playback. `mpv` works best:
+Whisper Antigravity works natively on **macOS**, **Linux**, and **Windows**:
 
-```bash
-# Debian / Ubuntu
-sudo apt install -y mpv
-
-# Fedora / RHEL
-sudo dnf install -y mpv
-
-# Arch Linux
-sudo pacman -S mpv
-```
-
-*(If `mpv` is not installed, `whisper-antigravity` will automatically look for `ffplay`, `paplay`, or `aplay`.)*
+| OS | Audio Player | Setup Required |
+| :--- | :--- | :--- |
+| **macOS** | Native `afplay` *(or `mpv` / `ffplay`)* | **Zero setup!** Built directly into macOS. |
+| **Linux** | `mpv` *(or `ffplay`, `paplay`, `aplay`)* | `sudo apt install -y mpv` *(recommended)* |
+| **Windows** | Native PowerShell `MediaPlayer` *(or `mpv`)* | **Zero setup!** Built into Windows 10/11. |
 
 ---
 
 ## 🚀 Quick Start & Installation
 
-Install with a single command via `curl`:
+### Linux & macOS (curl)
+
+Run in your terminal:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Kumneger0/whisper-antigravity/main/install.sh | bash
 ```
 
-*(Alternatively, if you cloned the repo locally, you can run `./install.sh` directly.)*
+### Windows (PowerShell)
+
+Run in PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/Kumneger0/whisper-antigravity/main/install.ps1 | iex
+```
+
+---
 
 The installer will automatically:
-1. Clone the project into `~/.local/share/whisper-antigravity`.
+1. Clone the project into `~/.local/share/whisper-antigravity` (or `%USERPROFILE%\.local\share\whisper-antigravity`).
 2. Create an isolated Python virtual environment and install `edge-tts`.
-3. Symlink the `whisper-antigravity` executable into `~/.local/bin/whisper-antigravity`.
+3. Provide the `whisper-antigravity` CLI command.
 4. Register the global `Stop` hook in `~/.gemini/config/hooks.json`.
 5. Install the global Antigravity rule in `~/.gemini/config/rules/whisper-antigravity.md`.
 

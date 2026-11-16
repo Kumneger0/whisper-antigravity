@@ -172,7 +172,9 @@ def cmd_install(args: argparse.Namespace) -> None:
         except Exception:
             hooks_data = {}
 
-    hook_command = f"{py_bin} -m whisper_antigravity.hook"
+    # Properly quote python executable if path has spaces (common on Windows and macOS)
+    quoted_py = f'"{py_bin}"' if (" " in py_bin and not py_bin.startswith('"')) else py_bin
+    hook_command = f"{quoted_py} -m whisper_antigravity.hook"
     hooks_data["whisper-antigravity"] = {
         "Stop": [
             {
