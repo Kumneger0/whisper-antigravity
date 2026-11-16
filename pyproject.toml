@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whisper-antigravity"
+version = "0.1.0"
+description = "Voice notifications and audio task summaries for Antigravity using edge-tts"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "edge-tts>=6.1.0"
+]
+
+[project.scripts]
+whisper-antigravity = "whisper_antigravity.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["whisper_antigravity*"]
