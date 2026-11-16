@@ -37,17 +37,20 @@ sudo pacman -S mpv
 
 ## 🚀 Quick Start & Installation
 
-Run the one-step installer:
+Install with a single command via `curl`:
 
 ```bash
-./install.sh
+curl -fsSL https://raw.githubusercontent.com/Kumneger0/whisper-antigravity/main/install.sh | bash
 ```
 
-The installer will:
-1. Create a Python virtual environment (`.venv`) and install dependencies (`edge-tts`).
-2. Symlink the CLI to `~/.local/bin/whisper-antigravity` (if available on your PATH).
-3. Register the global `Stop` hook in `~/.gemini/config/hooks.json`.
-4. Install the global Antigravity rule in `~/.gemini/config/rules/whisper-antigravity.md`.
+*(Alternatively, if you cloned the repo locally, you can run `./install.sh` directly.)*
+
+The installer will automatically:
+1. Clone the project into `~/.local/share/whisper-antigravity`.
+2. Create an isolated Python virtual environment and install `edge-tts`.
+3. Symlink the `whisper-antigravity` executable into `~/.local/bin/whisper-antigravity`.
+4. Register the global `Stop` hook in `~/.gemini/config/hooks.json`.
+5. Install the global Antigravity rule in `~/.gemini/config/rules/whisper-antigravity.md`.
 
 ---
 
